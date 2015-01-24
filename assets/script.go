@@ -52,7 +52,7 @@ func run() error {
 			mapView.RemoveMarker(marker)
 		}
 
-		markers = make([]*mapview.Marker, 0)
+		markers = nil
 
 		for _, clientState := range msg.Clients {
 			markers = append(markers, mapView.AddMarkerWithMessage(clientState.Lat, clientState.Lng, clientState.Name))
