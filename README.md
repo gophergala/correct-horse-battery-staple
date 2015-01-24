@@ -8,7 +8,7 @@ Installing
 
 You need to have Go installed.
 
-```
+```bash
 go get -u github.com/gophergala/correct-horse-battery-staple
 go get -u -d -tags=js github.com/gophergala/correct-horse-battery-staple/...
 ```
@@ -18,8 +18,15 @@ Running
 
 In the root project folder:
 
-```
+```bash
 go build && ./correct-horse-battery-staple
+```
+
+Deploy
+------
+
+```bash
+./deploy.sh
 ```
 
 Notes
