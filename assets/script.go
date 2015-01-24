@@ -23,7 +23,7 @@ func NewMarker(lat, lng float64) *Marker {
 }
 
 func (m *Marker) SetLatLng(lat, lng float64) {
-	m.Call("setLatLng", L.Call("latLng", lat, lng))
+	m.Call("setLatLng", L.Call("latLng", lat, lng)).Call("bindPopup", "Here I Am").Call("openPopup")
 }
 
 type MapView struct {
