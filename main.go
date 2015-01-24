@@ -15,6 +15,7 @@ import (
 )
 
 var httpFlag = flag.String("http", "localhost:8080", "Listen for HTTP connections on this address.")
+var webSocketHostFlag = flag.String("websockethost", "localhost:8080", "Listen for WebSocket connections on this address.")
 
 var t *template.Template
 
@@ -38,7 +39,7 @@ func mainHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	state.mu.Lock()
-	state.WebSocketHost = *httpFlag
+	state.WebSocketHost = *webSocketHostFlag
 	err := t.ExecuteTemplate(w, "index.html.tmpl", &state)
 	state.mu.Unlock()
 	if err != nil {
