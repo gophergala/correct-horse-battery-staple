@@ -26,6 +26,7 @@ func run() error {
 
 	mapView := mapview.New("map")
 	var markers []*mapview.Marker
+	var bounds *mapview.LatLngBounds
 
 	mapView.OnLocFound(func(loc js.Object) {
 		latlng := loc.Get("latlng")
@@ -54,9 +55,19 @@ func run() error {
 
 		markers = nil
 
-		for _, clientState := range msg.Clients {
-			markers = append(markers, mapView.AddMarkerWithMessage(clientState.Lat, clientState.Lng, clientState.Name))
+		for i, clientState := range msg.Clients {
+			markers = append(markers,
+				mapView.AddMarkerWithMessage(clientState.Lat, clientState.Lng, clientState.Name))
+			if i == 0 {
+				bounds = mapview.NewLatLngBounds(
+					mapview.NewLatLng(clientState.Lat, clientState.Lng),
+					mapview.NewLatLng(clientState.Lat, clientState.Lng))
+			} else {
+				bounds.Extend(mapview.NewLatLng(clientState.Lat, clientState.Lng))
+			}
 		}
+
+		mapView.Call("fitBounds", bounds)
 
 		// Logging
 		document.GetElementByID("content").SetTextContent(document.GetElementByID("content").TextContent() + fmt.Sprintf("%#v\n", msg))
