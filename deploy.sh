@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Building..."
-GOOS=linux go build ./*.go
+GOOS=linux go build
 
 echo "Stopping service"
 ssh root@where-you-at.com "service whereyouat stop"
