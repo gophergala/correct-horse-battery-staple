@@ -33,6 +33,17 @@ func (mv *MapView) AddMarker(lat, lng float64) *Marker {
 	return marker
 }
 
+func (mv *MapView) RemoveMarker(marker *Marker) {
+	mv.Call("removeLayer", marker)
+}
+
+func (mv *MapView) AddMarkerWithMessage(lat, lng float64, msg string) *Marker {
+	marker := NewMarker(lat, lng)
+	marker.Call("addTo", mv)
+	marker.Call("bindPopup", msg).Call("openPopup")
+	return marker
+}
+
 func (mv *MapView) StartLocate() {
 	mv.Call("locate", js.M{
 		"setView":            true,

@@ -25,11 +25,7 @@ func run() error {
 	dec := json.NewDecoder(ws)
 
 	mapView := mapview.New("map")
-	var markers [4]*mapview.Marker
-	markers[0] = mapView.AddMarker(0, 0)
-	markers[1] = mapView.AddMarker(0, 0)
-	markers[2] = mapView.AddMarker(0, 0)
-	markers[3] = mapView.AddMarker(0, 0)
+	var markers []*mapview.Marker
 
 	mapView.OnLocFound(func(loc js.Object) {
 		latlng := loc.Get("latlng")
@@ -52,10 +48,17 @@ func run() error {
 			return err
 		}
 
-		for i, clientState := range msg.Clients {
-			markers[i].SetLatLng(clientState.Lat, clientState.Lng, clientState.Name)
+		for _, marker := range markers {
+			mapView.RemoveMarker(marker)
 		}
 
+		markers = make([]*mapview.Marker, 0)
+
+		for _, clientState := range msg.Clients {
+			markers = append(markers, mapView.AddMarkerWithMessage(clientState.Lat, clientState.Lng, clientState.Name))
+		}
+
+		// Logging
 		document.GetElementByID("content").SetTextContent(document.GetElementByID("content").TextContent() + fmt.Sprintf("%#v\n", msg))
 	}
 }
