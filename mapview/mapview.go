@@ -59,3 +59,7 @@ func (mv *MapView) StopLocate() {
 func (mv *MapView) OnLocFound(cb func(js.Object)) {
 	mv.Call("on", "locationfound", cb)
 }
+
+func (mv *MapView) FitBounds(bounds *LatLngBounds) {
+	mv.Call("fitBounds", bounds)
+}

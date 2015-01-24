@@ -57,7 +57,7 @@ func run() error {
 
 		for i, clientState := range msg.Clients {
 			markers = append(markers,
-				mapView.AddMarkerWithMessage(clientState.Lat, clientState.Lng, clientState.Name))
+				mapView.AddMarker(clientState.Lat, clientState.Lng))
 			if i == 0 {
 				bounds = mapview.NewLatLngBounds(
 					mapview.NewLatLng(clientState.Lat, clientState.Lng),
@@ -68,11 +68,14 @@ func run() error {
 		}
 
 		if bounds != nil {
-			mapView.Call("fitBounds", bounds)
+			log.Printf("Fit bounds called! %#v %#v , %#v %#v\n", bounds.Call("getNorth").Float(), bounds.Call("getEast").Float(), bounds.Call("getSouth").Float(), bounds.Call("getWest").Float())
+			mapView.FitBounds(bounds)
 		}
 
 		log.Printf("%#v\n", msg)
 	}
+
+	return nil
 }
 
 func main() {
