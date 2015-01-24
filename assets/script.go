@@ -16,6 +16,10 @@ import (
 
 var document = dom.GetWindow().Document().(dom.HTMLDocument)
 
+func consolelog(msg interface{}) {
+	fmt.Printf("%#v\n", msg)
+}
+
 func run() error {
 	ws, err := websocket.Dial("ws://" + js.Global.Get("WebSocketHost").String() + "/websocket")
 	if err != nil {
@@ -70,7 +74,7 @@ func run() error {
 		mapView.Call("fitBounds", bounds)
 
 		// Logging
-		document.GetElementByID("content").SetTextContent(document.GetElementByID("content").TextContent() + fmt.Sprintf("%#v\n", msg))
+		consolelog(msg)
 	}
 }
 
