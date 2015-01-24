@@ -16,7 +16,7 @@ import (
 var document = dom.GetWindow().Document().(dom.HTMLDocument)
 
 func run() error {
-	ws, err := websocket.Dial("ws://" + js.Global.Get("WebSocketHost").String() + "/websocket")
+	ws, err := websocket.Dial(js.Global.Get("WebSocketAddress").String())
 	if err != nil {
 		return err
 	}

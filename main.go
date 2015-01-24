@@ -28,10 +28,14 @@ func loadTemplates() error {
 }
 
 var state = struct {
-	mu            sync.Mutex
-	WebSocketHost string
-	connections   map[*websocket.Conn]common.ClientState
-}{connections: make(map[*websocket.Conn]common.ClientState)}
+	mu    sync.Mutex
+	rooms map[string]*room
+}{rooms: make(map[string]*room)}
+
+type room struct {
+	mu          sync.Mutex
+	connections map[*websocket.Conn]serverClientState
+}
 
 func mainHandler(w http.ResponseWriter, req *http.Request) {
 	if err := loadTemplates(); err != nil {
@@ -40,10 +44,25 @@ func mainHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	roomId := req.URL.Path[1:]
+
+	var roomExists bool
 	state.mu.Lock()
-	state.WebSocketHost = *webSocketHostFlag
-	err := t.ExecuteTemplate(w, "index.html.tmpl", &state)
+	_, roomExists = state.rooms[roomId]
 	state.mu.Unlock()
+	if !roomExists {
+		// Create room and redirect to it.
+		roomId = generateRoomId()
+		state.mu.Lock()
+		state.rooms[roomId] = &room{connections: make(map[*websocket.Conn]serverClientState)}
+		state.mu.Unlock()
+		go broadcastUpdates(roomId)
+		http.Redirect(w, req, "/"+roomId, http.StatusFound)
+		return
+	}
+
+	webSocketAddress := "ws://" + *webSocketHostFlag + "/websocket/" + roomId
+	err := t.ExecuteTemplate(w, "index.html.tmpl", webSocketAddress)
 	if err != nil {
 		log.Println("t.Execute:", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -51,12 +70,27 @@ func mainHandler(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+type serverClientState struct {
+	common.ClientState
+
+	validPosition bool
+}
+
 func webSocketHandler(ws *websocket.Conn) {
+	roomId := ws.Request().URL.Path[len("/websocket/"):]
+
 	state.mu.Lock()
-	state.connections[ws] = common.ClientState{
-		ValidPosition: false, // When a client first connects, its initial position is not valid.
-	}
+	room, roomExists := state.rooms[roomId]
 	state.mu.Unlock()
+	if !roomExists {
+		return
+	}
+
+	room.mu.Lock()
+	room.connections[ws] = serverClientState{
+		validPosition: false, // When a client first connects, its initial position is not valid.
+	}
+	room.mu.Unlock()
 
 	dec := json.NewDecoder(ws)
 
@@ -69,38 +103,48 @@ func webSocketHandler(ws *websocket.Conn) {
 		}
 
 		fmt.Println("Got an update:", msg)
-		state.mu.Lock()
-		clientState := state.connections[ws]
-		clientState.ValidPosition = true
+		room.mu.Lock()
+		clientState := room.connections[ws]
+		clientState.validPosition = true
 		clientState.Name = msg.Name
 		clientState.Lat = msg.Lat
 		clientState.Lng = msg.Lng
-		state.connections[ws] = clientState
-		state.mu.Unlock()
+		room.connections[ws] = clientState
+		room.mu.Unlock()
 	}
 
-	state.mu.Lock()
-	delete(state.connections, ws)
-	state.mu.Unlock()
+	room.mu.Lock()
+	delete(room.connections, ws)
+	room.mu.Unlock()
 }
 
-func broadcastUpdates() {
+func broadcastUpdates(roomId string) {
+	state.mu.Lock()
+	room := state.rooms[roomId]
+	state.mu.Unlock()
+
 	for {
 		time.Sleep(1 * time.Second)
 
 		var msg common.ServerUpdate
 		var clients []*websocket.Conn // All clients to send an update message to.
 
-		state.mu.Lock()
-		for wc, clientState := range state.connections {
+		room.mu.Lock()
+		for wc, clientState := range room.connections {
 			// Only include clients with valid positions in the server update.
-			if clientState.ValidPosition {
-				msg.Clients = append(msg.Clients, clientState)
+			if clientState.validPosition {
+				msg.Clients = append(msg.Clients, clientState.ClientState)
 			}
 
 			clients = append(clients, wc)
 		}
-		state.mu.Unlock()
+		room.mu.Unlock()
+
+		// If there are no connected clients, break out and remove room.
+		if len(clients) == 0 {
+			// TODO: Not yet, what if this happens before first client connects?
+			//break
+		}
 
 		// Don't send empty update messages.
 		if len(msg.Clients) == 0 {
@@ -114,6 +158,11 @@ func broadcastUpdates() {
 			}
 		}
 	}
+
+	// Remove room.
+	state.mu.Lock()
+	delete(state.rooms, roomId)
+	state.mu.Unlock()
 }
 
 func main() {
@@ -126,11 +175,9 @@ func main() {
 
 	http.Handle("/favicon.ico/", http.NotFoundHandler())
 	http.Handle("/", http.HandlerFunc(mainHandler))
-	http.Handle("/websocket", websocket.Handler(webSocketHandler))
+	http.Handle("/websocket/", websocket.Handler(webSocketHandler))
 	http.Handle("/assets/", http.FileServer(http.Dir("./")))
 	http.Handle("/assets/script.go.js", gopherjs_http.GoFiles("./assets/script.go"))
-
-	go broadcastUpdates()
 
 	err = http.ListenAndServe(*httpFlag, nil)
 	if err != nil {
