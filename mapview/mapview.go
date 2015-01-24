@@ -29,7 +29,7 @@ func (mv *MapView) SetView(lat, lng float64, zoom int) {
 
 func (mv *MapView) AddMarker(lat, lng float64) *Marker {
 	marker := NewMarker(lat, lng)
-	marker.Call("addTo", mv)
+	marker.AddToMap(mv)
 	return marker
 }
 
