@@ -13,7 +13,7 @@ import (
 	"golang.org/x/net/websocket"
 )
 
-var httpFlag = flag.String("http", ":8080", "Listen for HTTP connections on this address.")
+var httpFlag = flag.String("http", "localhost:8080", "Listen for HTTP connections on this address.")
 
 var t *template.Template
 
@@ -25,7 +25,8 @@ func loadTemplates() error {
 }
 
 var state struct {
-	mu sync.Mutex
+	mu            sync.Mutex
+	WebSocketHost string
 }
 
 func mainHandler(w http.ResponseWriter, req *http.Request) {
@@ -36,6 +37,7 @@ func mainHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	state.mu.Lock()
+	state.WebSocketHost = *httpFlag
 	err := t.ExecuteTemplate(w, "index.html.tmpl", &state)
 	state.mu.Unlock()
 	if err != nil {

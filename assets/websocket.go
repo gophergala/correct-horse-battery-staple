@@ -7,6 +7,7 @@ import (
 
 	"github.com/gophergala/correct-horse-battery-staple/common"
 	"github.com/gophergala/correct-horse-battery-staple/js/encoding/json"
+	"github.com/gopherjs/gopherjs/js"
 	"github.com/gopherjs/websocket"
 	"honnef.co/go/js/dom"
 )
@@ -25,7 +26,7 @@ func main() {
 }
 
 func run() error {
-	ws, err := websocket.Dial("ws://localhost:8080/websocket") // TODO: Pass the server websocket endpoint URL from backend.
+	ws, err := websocket.Dial("ws://" + js.Global.Get("WebSocketHost").String() + "/websocket")
 	if err != nil {
 		return err
 	}
