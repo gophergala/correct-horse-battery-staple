@@ -70,7 +70,7 @@ func main() {
 	http.HandleFunc("/", mainHandler)
 	http.Handle("/websocket", websocket.Handler(websocketHandler))
 	http.Handle("/assets/", http.FileServer(http.Dir("./")))
-	http.Handle("/assets/script.go.js", gopherjs_http.GoFiles("./assets/script.go"))
+	http.Handle("/assets/websocket.go.js", gopherjs_http.GoFiles("./assets/websocket.go"))
 
 	err = http.ListenAndServe(*httpFlag, nil)
 	if err != nil {
