@@ -34,9 +34,10 @@ func run() error {
 
 	mapView.OnLocFound(func(loc js.Object) {
 		latlng := loc.Get("latlng")
-		clientUpdate := common.ClientUpdate{
-			Lat: latlng.Get("lat").Float(),
-			Lng: latlng.Get("lng").Float(),
+		clientUpdate := common.ClientState{
+			Name: "Me: (" + latlng.Get("lat").String() + ", " + latlng.Get("lng").String() + ")",
+			Lat:  latlng.Get("lat").Float(),
+			Lng:  latlng.Get("lng").Float(),
 		}
 		err = enc.Encode(clientUpdate)
 		if err != nil {

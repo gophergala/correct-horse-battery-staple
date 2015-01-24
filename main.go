@@ -53,15 +53,13 @@ func mainHandler(w http.ResponseWriter, req *http.Request) {
 
 func webSocketHandler(ws *websocket.Conn) {
 	state.mu.Lock()
-	state.connections[ws] = common.ClientState{
-		Name: fmt.Sprintf("Cool Gopher %v", len(state.connections)+1),
-	}
+	state.connections[ws] = common.ClientState{}
 	state.mu.Unlock()
 
 	dec := json.NewDecoder(ws)
 
 	for {
-		var msg common.ClientUpdate
+		var msg common.ClientState
 		err := dec.Decode(&msg)
 		if err != nil {
 			log.Println(err)
@@ -71,6 +69,7 @@ func webSocketHandler(ws *websocket.Conn) {
 		fmt.Println("Got an update:", msg)
 		state.mu.Lock()
 		clientState := state.connections[ws]
+		clientState.Name = msg.Name
 		clientState.Lat = msg.Lat
 		clientState.Lng = msg.Lng
 		state.connections[ws] = clientState
