@@ -1,13 +1,16 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"log"
 	"net/http"
 	"sync"
 	"text/template"
 
+	"github.com/gophergala/correct-horse-battery-staple/common"
 	"github.com/shurcooL/go/gopherjs_http"
+	"golang.org/x/net/websocket"
 )
 
 var httpFlag = flag.String("http", ":8080", "Listen for HTTP connections on this address.")
@@ -42,6 +45,19 @@ func mainHandler(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func websocketHandler(ws *websocket.Conn) {
+	var msg = common.SampleMessage{
+		X:       12,
+		Y:       34,
+		Message: "Hello from backend!",
+	}
+
+	err := json.NewEncoder(ws).Encode(msg)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
 func main() {
 	flag.Parse()
 
@@ -52,8 +68,10 @@ func main() {
 
 	http.Handle("/favicon.ico/", http.NotFoundHandler())
 	http.HandleFunc("/", mainHandler)
+	http.Handle("/websocket", websocket.Handler(websocketHandler))
 	http.Handle("/assets/", http.FileServer(http.Dir("./")))
 	http.Handle("/assets/script.go.js", gopherjs_http.GoFiles("./assets/script.go"))
+	http.Handle("/assets/websocket.go.js", gopherjs_http.GoFiles("./assets/websocket.go"))
 
 	err = http.ListenAndServe(*httpFlag, nil)
 	if err != nil {
