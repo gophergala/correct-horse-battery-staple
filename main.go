@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"sync"
@@ -26,10 +27,11 @@ func loadTemplates() error {
 	return err
 }
 
-var state struct {
+var state = struct {
 	mu            sync.Mutex
 	WebSocketHost string
-}
+	connections   map[*websocket.Conn]common.ClientState
+}{connections: make(map[*websocket.Conn]common.ClientState)}
 
 func mainHandler(w http.ResponseWriter, req *http.Request) {
 	if err := loadTemplates(); err != nil {
@@ -49,30 +51,58 @@ func mainHandler(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func websocketHandler(ws *websocket.Conn) {
-	time.Sleep(5 * time.Second)
+func webSocketHandler(ws *websocket.Conn) {
+	state.mu.Lock()
+	state.connections[ws] = common.ClientState{
+		Name: fmt.Sprintf("Cool Gopher %v", len(state.connections)+1),
+	}
+	state.mu.Unlock()
 
-	var msg = common.ServerUpdate{
-		Lat:     37.7740,
-		Lng:     -122.4175,
-		Message: "Starting Backend Pos",
+	dec := json.NewDecoder(ws)
+
+	for {
+		var msg common.ClientUpdate
+		err := dec.Decode(&msg)
+		if err != nil {
+			log.Println(err)
+			break
+		}
+
+		fmt.Println("Got an update:", msg)
+		state.mu.Lock()
+		clientState := state.connections[ws]
+		clientState.Lat = msg.Lat
+		clientState.Lng = msg.Lng
+		state.connections[ws] = clientState
+		state.mu.Unlock()
 	}
 
-	err := json.NewEncoder(ws).Encode(msg)
-	if err != nil {
-		log.Println(err)
-	}
+	state.mu.Lock()
+	delete(state.connections, ws)
+	state.mu.Unlock()
+}
 
-	time.Sleep(5 * time.Second)
+func broadcastUpdates() {
+	for {
+		time.Sleep(10 * time.Second)
 
-	// Send another update.
-	err = json.NewEncoder(ws).Encode(common.ServerUpdate{
-		Lat:     37.7740,
-		Lng:     -122.4165,
-		Message: "New Backend Pos!",
-	})
-	if err != nil {
-		log.Println(err)
+		var msg = common.ServerUpdate{}
+		var clients []*websocket.Conn
+
+		state.mu.Lock()
+		for wc, clientState := range state.connections {
+			msg.Clients = append(msg.Clients, clientState)
+
+			clients = append(clients, wc)
+		}
+		state.mu.Unlock()
+
+		for _, ws := range clients {
+			err := json.NewEncoder(ws).Encode(msg)
+			if err != nil {
+				log.Println(err)
+			}
+		}
 	}
 }
 
@@ -86,9 +116,11 @@ func main() {
 
 	http.Handle("/favicon.ico/", http.NotFoundHandler())
 	http.HandleFunc("/", mainHandler)
-	http.Handle("/websocket", websocket.Handler(websocketHandler))
+	http.Handle("/websocket", websocket.Handler(webSocketHandler))
 	http.Handle("/assets/", http.FileServer(http.Dir("./")))
 	http.Handle("/assets/script.go.js", gopherjs_http.GoFiles("./assets/script.go"))
+
+	go broadcastUpdates()
 
 	err = http.ListenAndServe(*httpFlag, nil)
 	if err != nil {

@@ -4,6 +4,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/gophergala/correct-horse-battery-staple/common"
 	"github.com/gophergala/correct-horse-battery-staple/js/encoding/json"
@@ -15,35 +16,34 @@ import (
 
 var document = dom.GetWindow().Document().(dom.HTMLDocument)
 
-var serverMarker *mapview.Marker
-
-func setupMapView() error {
-	mapView := mapview.New("map")
-	marker := mapView.AddMarker(0, 0)
-	serverMarker = mapView.AddMarker(0, 0)
-
-	mapView.OnLocFound(func(loc js.Object) {
-		latlng := loc.Get("latlng")
-		marker.SetLatLng(latlng.Get("lat").Float(), latlng.Get("lng").Float(), "Here I Am")
-	})
-
-	mapView.StartLocate()
-
-	return nil
-}
-
 func run() error {
-	err := setupMapView()
-	if err != nil {
-		return err
-	}
-
 	ws, err := websocket.Dial("ws://" + js.Global.Get("WebSocketHost").String() + "/websocket")
 	if err != nil {
 		return err
 	}
-
+	enc := json.NewEncoder(ws)
 	dec := json.NewDecoder(ws)
+
+	mapView := mapview.New("map")
+	var markers [4]*mapview.Marker
+	markers[0] = mapView.AddMarker(0, 0)
+	markers[1] = mapView.AddMarker(0, 0)
+	markers[2] = mapView.AddMarker(0, 0)
+	markers[3] = mapView.AddMarker(0, 0)
+
+	mapView.OnLocFound(func(loc js.Object) {
+		latlng := loc.Get("latlng")
+		clientUpdate := common.ClientUpdate{
+			Lat: latlng.Get("lat").Float(),
+			Lng: latlng.Get("lng").Float(),
+		}
+		err = enc.Encode(clientUpdate)
+		if err != nil {
+			log.Println("enc.Encode:", err)
+		}
+	})
+
+	mapView.StartLocate()
 
 	for {
 		var msg common.ServerUpdate
@@ -52,8 +52,11 @@ func run() error {
 			return err
 		}
 
+		for i, clientState := range msg.Clients {
+			markers[i].SetLatLng(clientState.Lat, clientState.Lng, clientState.Name)
+		}
+
 		document.GetElementByID("content").SetTextContent(document.GetElementByID("content").TextContent() + fmt.Sprintf("%#v\n", msg))
-		serverMarker.SetLatLng(msg.Lat, msg.Lng, msg.Message)
 	}
 }
 
