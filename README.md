@@ -1,5 +1,17 @@
+Installing
+----------
+
+You need to have Go installed.
+
+```
+go get -u github.com/gophergala/correct-horse-battery-staple
+go get -u -d -tags=js github.com/gophergala/correct-horse-battery-staple/...
+```
+
 Running
 -------
+
+In the root project folder:
 
 ```
 go build && ./correct-horse-battery-staple
