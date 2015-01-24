@@ -14,6 +14,7 @@ func NewMarker(lat, lng float64) *Marker {
 	}
 }
 
-func (m *Marker) SetLatLng(lat, lng float64) {
-	m.Call("setLatLng", NewLatLng(lat, lng)).Call("bindPopup", "Here I Am").Call("openPopup")
+// TODO: Setting message doesn't really belong here, so need to clean up the API later!
+func (m *Marker) SetLatLng(lat, lng float64, message string) {
+	m.Call("setLatLng", NewLatLng(lat, lng)).Call("bindPopup", message).Call("openPopup")
 }

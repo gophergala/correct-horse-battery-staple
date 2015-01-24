@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"sync"
 	"text/template"
+	"time"
 
 	"github.com/gophergala/correct-horse-battery-staple/common"
 	"github.com/shurcooL/go/gopherjs_http"
@@ -48,13 +49,27 @@ func mainHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func websocketHandler(ws *websocket.Conn) {
-	var msg = common.SampleMessage{
-		X:       12,
-		Y:       34,
-		Message: "Hello from backend!",
+	time.Sleep(5 * time.Second)
+
+	var msg = common.ServerUpdate{
+		Lat:     37.7740,
+		Lng:     -122.4175,
+		Message: "Starting Backend Pos",
 	}
 
 	err := json.NewEncoder(ws).Encode(msg)
+	if err != nil {
+		log.Println(err)
+	}
+
+	time.Sleep(5 * time.Second)
+
+	// Send another update.
+	err = json.NewEncoder(ws).Encode(common.ServerUpdate{
+		Lat:     37.7740,
+		Lng:     -122.4165,
+		Message: "New Backend Pos!",
+	})
 	if err != nil {
 		log.Println(err)
 	}

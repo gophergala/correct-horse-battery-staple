@@ -15,13 +15,16 @@ import (
 
 var document = dom.GetWindow().Document().(dom.HTMLDocument)
 
+var serverMarker *mapview.Marker
+
 func setupMapView() error {
 	mapView := mapview.New("map")
 	marker := mapView.AddMarker(0, 0)
+	serverMarker = mapView.AddMarker(0, 0)
 
 	mapView.OnLocFound(func(loc js.Object) {
 		latlng := loc.Get("latlng")
-		marker.SetLatLng(latlng.Get("lat").Float(), latlng.Get("lng").Float())
+		marker.SetLatLng(latlng.Get("lat").Float(), latlng.Get("lng").Float(), "Here I Am")
 	})
 
 	mapView.StartLocate()
@@ -43,15 +46,14 @@ func run() error {
 	dec := json.NewDecoder(ws)
 
 	for {
-		var msg common.SampleMessage
+		var msg common.ServerUpdate
 		err = dec.Decode(&msg)
 		if err != nil {
 			return err
 		}
 
-		msg.Message += " And frontend!"
-
-		document.GetElementByID("content").SetTextContent(fmt.Sprintf("%#v", msg))
+		document.GetElementByID("content").SetTextContent(document.GetElementByID("content").TextContent() + fmt.Sprintf("%#v\n", msg))
+		serverMarker.SetLatLng(msg.Lat, msg.Lng, msg.Message)
 	}
 }
 

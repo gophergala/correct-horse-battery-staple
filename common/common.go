@@ -1,7 +1,6 @@
 package common
 
-type SampleMessage struct {
-	X       int
-	Y       int
-	Message string
+type ServerUpdate struct {
+	Lat, Lng float64
+	Message  string
 }
