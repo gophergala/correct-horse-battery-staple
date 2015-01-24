@@ -17,7 +17,7 @@ var httpFlag = flag.String("http", ":8080", "Listen for HTTP connections on this
 
 var t *template.Template
 
-var WebsocketHost = "localhost"
+var WebSocketHost = "localhost"
 
 func loadTemplates() error {
 	var err error
@@ -28,7 +28,7 @@ func loadTemplates() error {
 
 var state struct {
 	mu            sync.Mutex
-	WebsocketHost string
+	WebSocketHost string
 }
 
 func mainHandler(w http.ResponseWriter, req *http.Request) {
@@ -39,7 +39,7 @@ func mainHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	state.mu.Lock()
-	state.WebsocketHost = WebsocketHost + *httpFlag
+	state.WebSocketHost = WebSocketHost + *httpFlag
 	err := t.ExecuteTemplate(w, "index.html.tmpl", &state)
 	state.mu.Unlock()
 	if err != nil {
