@@ -67,7 +67,9 @@ func run() error {
 			}
 		}
 
-		mapView.Call("fitBounds", bounds)
+		if bounds != nil {
+			mapView.Call("fitBounds", bounds)
+		}
 
 		log.Printf("%#v\n", msg)
 	}
