@@ -121,7 +121,7 @@ Input:
 
 		// Read.  Delay error for next iteration (after scan).
 		var n int
-		n, err = dec.r.Read(dec.buf[len(dec.buf):cap(dec.buf)])
+		n, err = dec.r.Read(dec.buf[len(dec.buf):cap(dec.buf)]) //gopherjs:blocking
 		dec.buf = dec.buf[0 : len(dec.buf)+n]
 	}
 	return scanp, nil
