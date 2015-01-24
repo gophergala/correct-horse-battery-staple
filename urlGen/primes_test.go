@@ -1,4 +1,4 @@
-package urlGen
+package urlgen
 
 import (
 	"testing"

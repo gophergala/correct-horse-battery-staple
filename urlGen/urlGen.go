@@ -1,4 +1,4 @@
-package urlGen
+package urlgen
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	MAX_ROOMS = 64000
+	maxRooms = 64000
 )
 
 var alphabet string = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -29,7 +29,7 @@ func init() {
 	// Figure out how many digits we need and the prime
 	numberOfDigits = int64(1)
 	var max int64
-	for max = powInt(int64(len(alphabet)), numberOfDigits); max < MAX_ROOMS; {
+	for max = powInt(int64(len(alphabet)), numberOfDigits); max < maxRooms; {
 		numberOfDigits++
 		max = powInt(int64(len(alphabet)), numberOfDigits)
 	}
@@ -37,7 +37,7 @@ func init() {
 	for ; !isPrime(max); max-- {
 	}
 
-	if max < MAX_ROOMS {
+	if max < maxRooms {
 		numberOfDigits++
 		max = powInt(int64(len(alphabet)), numberOfDigits)
 		for ; !isPrime(max); max-- {

@@ -1,4 +1,4 @@
-package urlGen
+package urlgen
 
 // Returns the numerator and denominator of a division operation
 func divMod(numerator, denominator int64) (quotient, remainder int64) {

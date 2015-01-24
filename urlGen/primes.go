@@ -1,4 +1,4 @@
-package urlGen
+package urlgen
 
 var primes []int64
 
