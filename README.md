@@ -19,14 +19,14 @@ Running
 In the root project folder:
 
 ```bash
-go build && ./correct-horse-battery-staple
+go build -o main && ./main
 ```
 
 Deploy
 ------
 
 ```bash
-./deploy.sh
+go test ./... && GOOS=linux go build -o main && ./deploy.sh
 ```
 
 Notes
