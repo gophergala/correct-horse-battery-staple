@@ -3,7 +3,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/gophergala/correct-horse-battery-staple/common"
@@ -15,10 +14,6 @@ import (
 )
 
 var document = dom.GetWindow().Document().(dom.HTMLDocument)
-
-func consolelog(msg interface{}) {
-	fmt.Printf("%#v\n", msg)
-}
 
 func run() error {
 	ws, err := websocket.Dial("ws://" + js.Global.Get("WebSocketHost").String() + "/websocket")
@@ -34,12 +29,12 @@ func run() error {
 
 	mapView.OnLocFound(func(loc js.Object) {
 		latlng := loc.Get("latlng")
-		clientUpdate := common.ClientState{
+		clientState := common.ClientState{
 			Name: "Me: (" + latlng.Get("lat").String() + ", " + latlng.Get("lng").String() + ")",
 			Lat:  latlng.Get("lat").Float(),
 			Lng:  latlng.Get("lng").Float(),
 		}
-		err = enc.Encode(clientUpdate)
+		err = enc.Encode(clientState)
 		if err != nil {
 			log.Println("enc.Encode:", err)
 		}
@@ -74,8 +69,7 @@ func run() error {
 
 		mapView.Call("fitBounds", bounds)
 
-		// Logging
-		consolelog(msg)
+		log.Printf("%#v\n", msg)
 	}
 }
 
@@ -84,7 +78,7 @@ func main() {
 		go func() {
 			err := run()
 			if err != nil {
-				fmt.Println(err)
+				log.Println(err)
 			}
 		}()
 	})
