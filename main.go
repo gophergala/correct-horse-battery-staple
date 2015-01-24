@@ -53,7 +53,9 @@ func mainHandler(w http.ResponseWriter, req *http.Request) {
 
 func webSocketHandler(ws *websocket.Conn) {
 	state.mu.Lock()
-	state.connections[ws] = common.ClientState{}
+	state.connections[ws] = common.ClientState{
+		ValidPosition: false, // When a client first connects, its initial position is not valid.
+	}
 	state.mu.Unlock()
 
 	dec := json.NewDecoder(ws)
@@ -69,6 +71,7 @@ func webSocketHandler(ws *websocket.Conn) {
 		fmt.Println("Got an update:", msg)
 		state.mu.Lock()
 		clientState := state.connections[ws]
+		clientState.ValidPosition = true
 		clientState.Name = msg.Name
 		clientState.Lat = msg.Lat
 		clientState.Lng = msg.Lng
@@ -83,18 +86,26 @@ func webSocketHandler(ws *websocket.Conn) {
 
 func broadcastUpdates() {
 	for {
-		time.Sleep(10 * time.Second)
+		time.Sleep(1 * time.Second)
 
-		var msg = common.ServerUpdate{}
-		var clients []*websocket.Conn
+		var msg common.ServerUpdate
+		var clients []*websocket.Conn // All clients to send an update message to.
 
 		state.mu.Lock()
 		for wc, clientState := range state.connections {
-			msg.Clients = append(msg.Clients, clientState)
+			// Only include clients with valid positions in the server update.
+			if clientState.ValidPosition {
+				msg.Clients = append(msg.Clients, clientState)
+			}
 
 			clients = append(clients, wc)
 		}
 		state.mu.Unlock()
+
+		// Don't send empty update messages.
+		if len(msg.Clients) == 0 {
+			continue
+		}
 
 		for _, ws := range clients {
 			err := json.NewEncoder(ws).Encode(msg)
@@ -114,7 +125,7 @@ func main() {
 	}
 
 	http.Handle("/favicon.ico/", http.NotFoundHandler())
-	http.HandleFunc("/", mainHandler)
+	http.Handle("/", http.HandlerFunc(mainHandler))
 	http.Handle("/websocket", websocket.Handler(webSocketHandler))
 	http.Handle("/assets/", http.FileServer(http.Dir("./")))
 	http.Handle("/assets/script.go.js", gopherjs_http.GoFiles("./assets/script.go"))
