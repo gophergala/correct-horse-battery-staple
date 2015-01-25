@@ -14,14 +14,17 @@ type Marker struct {
 func NewMarker(lat, lng float64) *Marker {
 	return &Marker{
 		Object:  L.Call("marker", NewLatLng(lat, lng)),
-		Message: nil,
+		Message: NewPopup(lat, lng),
 		Lat:     lat,
 		Lng:     lng,
 	}
 }
 
 func (m *Marker) SetLatLng(lat, lng float64) {
+	m.Lat = lat
+	m.Lng = lng
 	m.Call("setLatLng", NewLatLng(lat, lng))
+	m.Message.Call("setLatLng", NewLatLng(lat, lng))
 }
 
 func (m *Marker) AddToMap(mapView *MapView) {
@@ -30,7 +33,6 @@ func (m *Marker) AddToMap(mapView *MapView) {
 }
 
 func (m *Marker) SetMessage(message string) {
-	m.Message = NewPopup(m.Lat, m.Lng)
 	m.Message.SetContent(message)
 }
 
