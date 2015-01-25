@@ -96,6 +96,7 @@ func run() error {
 
 		if bounds != nil {
 			log.Printf("Fit bounds called! %#v %#v , %#v %#v\n", bounds.Call("getNorth").Float(), bounds.Call("getEast").Float(), bounds.Call("getSouth").Float(), bounds.Call("getWest").Float())
+			bounds.Pad(0.05)
 			mapView.FitBounds(bounds)
 		}
 

@@ -17,3 +17,7 @@ func NewLatLngBounds(southWest, northEast *LatLng) *LatLngBounds {
 func (llb *LatLngBounds) Extend(point *LatLng) {
 	llb.Call("extend", point)
 }
+
+func (llb *LatLngBounds) Pad(percentage float64) {
+	llb.Object = llb.Call("pad", percentage)
+}
