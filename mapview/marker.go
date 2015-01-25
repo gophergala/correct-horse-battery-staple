@@ -51,6 +51,7 @@ func (m *Marker) SetMessage(message string) {
 	} else {
 		if m.Message != nil && m.mapView != nil {
 			m.mapView.Call("removeLayer", m.Message)
+			m.Message = nil
 		}
 	}
 }
