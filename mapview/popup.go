@@ -9,8 +9,9 @@ type Popup struct {
 }
 
 func NewPopup(lat, lng float64) *Popup {
-	options := make(map[string]*Point, 1)
+	options := make(map[string]interface{})
 	options["offset"] = NewPoint(0, -24)
+	options["closeButton"] = false
 	popup := &Popup{
 		Object: L.Call("popup", options),
 	}
