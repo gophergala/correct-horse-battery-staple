@@ -87,15 +87,10 @@ func webSocketHandler(ws *websocket.Conn) {
 		return
 	}
 
-	idLock.Lock()
-	id++
-	webSocketId := id
-	idLock.Unlock()
-
 	room.mu.Lock()
 	room.connections[ws] = serverClientState{
 		ClientState: common.ClientState{
-			Id: webSocketId,
+			Id: getUniqueId(),
 		},
 		validPosition: false, // When a client first connects, its initial position is not valid.
 	}

@@ -9,11 +9,14 @@ import (
 var id int64
 var idLock sync.Mutex
 
-func generateRoomId() string {
+func getUniqueId() int64 {
 	idLock.Lock()
 	id++
-	token := urlgen.GetTokenFromId(id)
+	value := id
 	idLock.Unlock()
+	return value
+}
 
-	return token
+func generateRoomId() string {
+	return urlgen.GetTokenFromId(getUniqueId())
 }
