@@ -38,11 +38,6 @@ type room struct {
 	connections map[*websocket.Conn]serverClientState
 }
 
-var pageVars = struct {
-	WebSocketAddress    string
-	GoogleAnalyticsCode string
-}{}
-
 func mainHandler(w http.ResponseWriter, req *http.Request) {
 	if err := loadTemplates(); err != nil {
 		log.Println("loadTemplates:", err)
@@ -51,6 +46,14 @@ func mainHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	roomId := req.URL.Path[1:]
+
+	var pageVars = struct {
+		WebSocketAddress    string
+		GoogleAnalyticsCode string
+	}{
+		WebSocketAddress:    "ws://" + *webSocketHostFlag + "/websocket/" + roomId,
+		GoogleAnalyticsCode: *googleAnalyticsFlag,
+	}
 
 	var roomExists bool
 	state.mu.Lock()
@@ -71,9 +74,6 @@ func mainHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	webSocketAddress := "ws://" + *webSocketHostFlag + "/websocket/" + roomId
-	pageVars.WebSocketAddress = webSocketAddress
-	pageVars.GoogleAnalyticsCode = *googleAnalyticsFlag
 	err := t.ExecuteTemplate(w, "index.html.tmpl", pageVars)
 	if err != nil {
 		log.Println("t.Execute:", err)
