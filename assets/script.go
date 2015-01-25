@@ -37,6 +37,8 @@ func run() error {
 		shareBox := document.GetElementByID("share-box").(*dom.HTMLInputElement)
 		shareBox.Style().SetProperty("display", "initial", "")
 		shareBox.Focus()
+		shareBox.Select()
+		shareBox.Value = dom.GetWindow().Location().Href
 
 		shareIcon.Style().SetProperty("display", "none", "")
 
