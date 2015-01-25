@@ -25,7 +25,7 @@ func run() error {
 	dec := json.NewDecoder(ws)
 
 	mapView := mapview.New("map")
-	var markers []*mapview.Marker
+	markers := make(map[int64]*mapview.Marker, 10)
 	var bounds *mapview.LatLngBounds
 	var lat, lng float64
 	foundLocation := false
@@ -61,20 +61,26 @@ func run() error {
 
 	for {
 		var msg common.ServerUpdate
+		originalIds := make(map[int64]interface{})
+
+		for k := range markers {
+			originalIds[k] = nil
+		}
+
 		err = dec.Decode(&msg)
 		if err != nil {
 			return err
 		}
 
-		for _, marker := range markers {
-			marker.RemoveFromMap(mapView)
-		}
-
-		markers = nil
-
 		for i, clientState := range msg.Clients {
-			markers = append(markers,
-				mapView.AddMarkerWithMessage(clientState.Lat, clientState.Lng, clientState.Name))
+			if markers[clientState.Id] == nil {
+				markers[clientState.Id] = mapView.AddMarkerWithMessage(clientState.Lat, clientState.Lng, clientState.Name)
+			} else {
+				markers[clientState.Id].SetLatLng(clientState.Lat, clientState.Lng)
+				markers[clientState.Id].SetMessage(clientState.Name)
+				delete(originalIds, clientState.Id)
+			}
+
 			if i == 0 {
 				bounds = mapview.NewLatLngBounds(
 					mapview.NewLatLng(clientState.Lat, clientState.Lng),
@@ -84,12 +90,16 @@ func run() error {
 			}
 		}
 
+		for key := range originalIds {
+			markers[key].RemoveFromMap(mapView)
+		}
+
 		if bounds != nil {
-			log.Printf("Fit bounds called! %#v %#v , %#v %#v\n", bounds.Call("getNorth").Float(), bounds.Call("getEast").Float(), bounds.Call("getSouth").Float(), bounds.Call("getWest").Float())
+			//log.Printf("Fit bounds called! %#v %#v , %#v %#v\n", bounds.Call("getNorth").Float(), bounds.Call("getEast").Float(), bounds.Call("getSouth").Float(), bounds.Call("getWest").Float())
 			mapView.FitBounds(bounds)
 		}
 
-		log.Printf("%#v\n", msg)
+		//log.Printf("%#v\n", msg)
 	}
 
 	return nil
