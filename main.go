@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
 	"log"
 	"net/http"
 	"sync"
@@ -88,8 +87,16 @@ func webSocketHandler(ws *websocket.Conn) {
 		return
 	}
 
+	idLock.Lock()
+	webSocketId := id
+	id++
+	idLock.Unlock()
+
 	room.mu.Lock()
 	room.connections[ws] = serverClientState{
+		ClientState: common.ClientState{
+			Id: webSocketId,
+		},
 		validPosition: false, // When a client first connects, its initial position is not valid.
 	}
 	room.mu.Unlock()
@@ -104,7 +111,6 @@ func webSocketHandler(ws *websocket.Conn) {
 			break
 		}
 
-		fmt.Println("Got an update:", msg)
 		room.mu.Lock()
 		clientState := room.connections[ws]
 		clientState.validPosition = true
