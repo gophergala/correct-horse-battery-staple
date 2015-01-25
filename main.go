@@ -5,6 +5,7 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"sort"
 	"sync"
 	"text/template"
 	"time"
@@ -155,6 +156,8 @@ func broadcastUpdates(roomId string) {
 		if len(msg.Clients) == 0 {
 			continue
 		}
+
+		sort.Sort(msg.Clients)
 
 		for _, ws := range clients {
 			err := json.NewEncoder(ws).Encode(msg)
