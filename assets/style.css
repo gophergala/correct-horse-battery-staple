@@ -6,7 +6,20 @@ body {
 	width: 100%;
 	height: 100%;
 }
-  
+
+
+.urlhelp {
+	height: 30px;
+	font: normal 24px/100% Verdana, Tahoma, sans-serif;
+	position: fixed;
+	top: 0px;
+	z-index:99;
+	width: 100%;
+	text-align: center;
+	background-color: #fff;
+	background-color: rgba(255,255,255,0.5);
+}
+
 .message {
 	height: 50px;
 	border: solid 1px #E5E5E5;
