@@ -6,7 +6,7 @@ import (
 	"github.com/gophergala/correct-horse-battery-staple/urlgen"
 )
 
-var id int64 = int64(0)
+var id int64
 var idLock sync.Mutex
 
 func generateRoomId() string {
