@@ -88,8 +88,8 @@ func webSocketHandler(ws *websocket.Conn) {
 	}
 
 	idLock.Lock()
-	webSocketId := id
 	id++
+	webSocketId := id
 	idLock.Unlock()
 
 	room.mu.Lock()
