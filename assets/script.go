@@ -3,7 +3,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -33,30 +32,12 @@ func run() error {
 	}
 
 	webSocketClosed := false
-
 	ws, err := websocket.Dial(js.Global.Get("WebSocketAddress").String())
 	if err != nil {
 		return err
 	}
 	defer ws.Close()
 	ws.AddEventListener("close", false, func(_ js.Object) {
-		/*go func() {
-			for {
-				ws.Close()
-
-				time.Sleep(5 * time.Second)
-
-				ws, err := websocket.Dial(js.Global.Get("WebSocketAddress").String())
-				if err != nil {
-					continue
-				}
-				ws2 = ws
-				enc = json.NewEncoder(ws)
-				dec = json.NewDecoder(ws)
-				fmt.Println("setting new connection enc/dec")
-				return
-			}
-		}()*/
 		webSocketClosed = true
 	})
 	enc := json.NewEncoder(ws)
@@ -79,8 +60,6 @@ func run() error {
 				continue
 			}
 
-			fmt.Println("sending update")
-
 			clientState := common.ClientState{
 				Name:     document.GetElementByID("message").(*dom.HTMLInputElement).Value,
 				Lat:      lat,
@@ -91,8 +70,6 @@ func run() error {
 			err = enc.Encode(clientState)
 			if err != nil {
 				log.Println("enc.Encode:", err)
-				//time.Sleep(10 * time.Second)
-				//continue
 				break
 			}
 		}
@@ -119,8 +96,6 @@ func run() error {
 		err = dec.Decode(&msg)
 		if err != nil || webSocketClosed {
 			log.Println("dec.Decode:", err)
-			//time.Sleep(10 * time.Second)
-			//continue
 			break
 		}
 

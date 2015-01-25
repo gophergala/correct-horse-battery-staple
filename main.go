@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
 	"log"
 	"net/http"
 	"sort"
@@ -78,11 +77,7 @@ type serverClientState struct {
 }
 
 func webSocketHandler(ws *websocket.Conn) {
-	fmt.Println("new websocket handler!")
-	defer fmt.Println("new websocket handler closed.")
-
 	roomId := ws.Request().URL.Path[len("/websocket/"):]
-	fmt.Println("room is:", roomId)
 
 	state.mu.Lock()
 	r, roomExists := state.rooms[roomId]
@@ -117,8 +112,6 @@ func webSocketHandler(ws *websocket.Conn) {
 			log.Println(err)
 			break
 		}
-
-		fmt.Println("got an update")
 
 		r.mu.Lock()
 		clientState := r.connections[ws]
