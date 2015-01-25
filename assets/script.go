@@ -51,11 +51,11 @@ func run() error {
 	shareIcon := document.GetElementByID("share-icon").(*dom.HTMLImageElement)
 	shareIcon.AddEventListener("click", false, func(event dom.Event) {
 		event.PreventDefault()
-		shareBox := document.GetElementByID("share-box").(*dom.HTMLInputElement)
+		shareBox := document.GetElementByID("share-box").(*dom.HTMLAnchorElement)
 		shareBox.Style().SetProperty("display", "initial", "")
 		shareBox.Focus()
-		shareBox.Select()
-		shareBox.Value = dom.GetWindow().Location().Href
+		shareBox.Text = dom.GetWindow().Location().Href
+		shareBox.Href = dom.GetWindow().Location().Href
 
 		shareIcon.Style().SetProperty("display", "none", "")
 
