@@ -61,7 +61,7 @@ func run() error {
 
 	for {
 		var msg common.ServerUpdate
-		originalIds := make(map[int64]interface{})
+		originalIds := make(map[int64]struct{})
 
 		for k := range markers {
 			originalIds[k] = nil
