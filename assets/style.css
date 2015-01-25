@@ -9,11 +9,11 @@ body {
 
 
 .urlhelp {
-	height: 30px;
 	font: normal 24px/100% Verdana, Tahoma, sans-serif;
+	padding: 4px 0;
 	position: fixed;
 	top: 0px;
-	z-index:99;
+	z-index: 1;
 	width: 100%;
 	text-align: center;
 	background-color: #fff;
@@ -52,4 +52,10 @@ body {
 	height:0 !important;
 	overflow:hidden !important;
 	position:absolute !important;
+}
+
+@media screen and (max-width: 650px) {
+	.urlhelp {
+		font-size: 16px;
+	}
 }
