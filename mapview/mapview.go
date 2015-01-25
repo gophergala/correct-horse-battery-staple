@@ -48,7 +48,6 @@ func (mv *MapView) AddMarkerWithMessage(lat, lng float64, msg string) *Marker {
 
 func (mv *MapView) StartLocate() {
 	mv.Call("locate", js.M{
-		"setView":            true,
 		"watch":              true,
 		"enableHighAccuracy": true,
 	})
