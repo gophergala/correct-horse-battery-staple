@@ -34,9 +34,9 @@ body {
 
 .share-icon {
 	z-index:1;
-	position: fixed;
+	position: absolute;
 	right:0px;
-	top:50%;
+	top:100%;
 	max-height:50px;
 	max-width:50px;
 	cursor:pointer;
