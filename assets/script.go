@@ -31,6 +31,22 @@ func run() error {
 	var accuracy float64
 	foundLocation := false
 
+	shareIcon := document.GetElementByID("share-icon").(*dom.HTMLImageElement)
+	shareIcon.AddEventListener("click", false, func(event dom.Event) {
+		event.PreventDefault()
+		shareBox := document.GetElementByID("share-box").(*dom.HTMLInputElement)
+		shareBox.Style().SetProperty("display", "initial", "")
+		shareBox.Focus()
+
+		shareIcon.Style().SetProperty("display", "none", "")
+
+		shareBox.AddEventListener("blur", false, func(event dom.Event) {
+			event.PreventDefault()
+			shareBox.Style().SetProperty("display", "none", "")
+			shareIcon.Style().SetProperty("display", "initial", "")
+		})
+	})
+
 	go func() {
 		for {
 			time.Sleep(time.Second)
