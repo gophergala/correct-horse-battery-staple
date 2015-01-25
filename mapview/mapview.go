@@ -15,7 +15,9 @@ type MapView struct {
 }
 
 func New(id string) *MapView {
-	mapView := L.Call("map", id)
+	options := make(map[string]bool)
+	//options["closePopupOnClick"] = false
+	mapView := L.Call("map", id, options)
 	L.Call("tileLayer", tilesUrl).Call("addTo", mapView)
 
 	return &MapView{
