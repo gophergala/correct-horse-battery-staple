@@ -64,7 +64,7 @@ func run() error {
 		originalIds := make(map[int64]struct{})
 
 		for k := range markers {
-			originalIds[k] = nil
+			originalIds[k] = struct{}{}
 		}
 
 		err = dec.Decode(&msg)
