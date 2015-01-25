@@ -39,8 +39,8 @@ func (mv *MapView) RemoveMarker(marker *Marker) {
 
 func (mv *MapView) AddMarkerWithMessage(lat, lng float64, msg string) *Marker {
 	marker := NewMarker(lat, lng)
-	marker.AddToMap(mv)
 	marker.SetMessage(msg)
+	marker.AddToMap(mv)
 	return marker
 }
 

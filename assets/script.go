@@ -50,14 +50,14 @@ func run() error {
 		}
 
 		for _, marker := range markers {
-			mapView.RemoveMarker(marker)
+			marker.RemoveFromMap(mapView)
 		}
 
 		markers = nil
 
 		for i, clientState := range msg.Clients {
 			markers = append(markers,
-				mapView.AddMarker(clientState.Lat, clientState.Lng))
+				mapView.AddMarkerWithMessage(clientState.Lat, clientState.Lng, clientState.Name))
 			if i == 0 {
 				bounds = mapview.NewLatLngBounds(
 					mapview.NewLatLng(clientState.Lat, clientState.Lng),
