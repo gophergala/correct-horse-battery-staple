@@ -51,7 +51,9 @@ func mainHandler(w http.ResponseWriter, req *http.Request) {
 	state.mu.Unlock()
 	if !roomExists {
 		// Create room and redirect to it.
-		roomId = generateRoomId()
+		if validateRoomId(roomId) != nil {
+			roomId = generateRoomId()
+		}
 		state.mu.Lock()
 		if _, ok := state.rooms[roomId]; !ok {
 			state.rooms[roomId] = &room{connections: make(map[*websocket.Conn]serverClientState)}
