@@ -3,6 +3,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -16,16 +17,51 @@ import (
 
 var document = dom.GetWindow().Document().(dom.HTMLDocument)
 
+var markers map[int64]*mapview.Marker = make(map[int64]*mapview.Marker, 10)
+var mapView *mapview.MapView
+
+func setup() error {
+	mapView = mapview.New("map")
+
+	return nil
+}
+
 func run() error {
+	// Clear all markers (possibly left over from previous connection).
+	for _, marker := range markers {
+		marker.RemoveFromMap(mapView)
+	}
+
+	webSocketClosed := false
+
 	ws, err := websocket.Dial(js.Global.Get("WebSocketAddress").String())
 	if err != nil {
 		return err
 	}
+	defer ws.Close()
+	ws.AddEventListener("close", false, func(_ js.Object) {
+		/*go func() {
+			for {
+				ws.Close()
+
+				time.Sleep(5 * time.Second)
+
+				ws, err := websocket.Dial(js.Global.Get("WebSocketAddress").String())
+				if err != nil {
+					continue
+				}
+				ws2 = ws
+				enc = json.NewEncoder(ws)
+				dec = json.NewDecoder(ws)
+				fmt.Println("setting new connection enc/dec")
+				return
+			}
+		}()*/
+		webSocketClosed = true
+	})
 	enc := json.NewEncoder(ws)
 	dec := json.NewDecoder(ws)
 
-	mapView := mapview.New("map")
-	markers := make(map[int64]*mapview.Marker, 10)
 	var bounds *mapview.LatLngBounds
 	var lat, lng float64
 	var accuracy float64
@@ -33,21 +69,31 @@ func run() error {
 
 	go func() {
 		for {
+			if webSocketClosed {
+				break
+			}
+
 			time.Sleep(time.Second)
-			message := document.GetElementByID("message").(*dom.HTMLInputElement).Value
+
+			if !foundLocation {
+				continue
+			}
+
+			fmt.Println("sending update")
 
 			clientState := common.ClientState{
-				Name:     message,
+				Name:     document.GetElementByID("message").(*dom.HTMLInputElement).Value,
 				Lat:      lat,
 				Lng:      lng,
 				Accuracy: accuracy,
 			}
 
-			if foundLocation {
-				err = enc.Encode(clientState)
-				if err != nil {
-					log.Println("enc.Encode:", err)
-				}
+			err = enc.Encode(clientState)
+			if err != nil {
+				log.Println("enc.Encode:", err)
+				//time.Sleep(10 * time.Second)
+				//continue
+				break
 			}
 		}
 	}()
@@ -71,8 +117,11 @@ func run() error {
 		}
 
 		err = dec.Decode(&msg)
-		if err != nil {
-			return err
+		if err != nil || webSocketClosed {
+			log.Println("dec.Decode:", err)
+			//time.Sleep(10 * time.Second)
+			//continue
+			break
 		}
 
 		for i, clientState := range msg.Clients {
@@ -99,7 +148,6 @@ func run() error {
 		}
 
 		if bounds != nil {
-			log.Printf("Fit bounds called! %#v %#v , %#v %#v\n", bounds.Call("getNorth").Float(), bounds.Call("getEast").Float(), bounds.Call("getSouth").Float(), bounds.Call("getWest").Float())
 			bounds.Pad(0.05)
 			mapView.FitBounds(bounds)
 		}
@@ -107,15 +155,26 @@ func run() error {
 		log.Printf("%#v\n", msg)
 	}
 
+	mapView.StopLocate()
+
 	return nil
 }
 
 func main() {
 	document.AddEventListener("DOMContentLoaded", false, func(_ dom.Event) {
 		go func() {
-			err := run()
+			err := setup()
 			if err != nil {
 				log.Println(err)
+			}
+
+			for {
+				err := run()
+				if err != nil {
+					log.Println(err)
+				}
+
+				time.Sleep(5 * time.Second)
 			}
 		}()
 	})
