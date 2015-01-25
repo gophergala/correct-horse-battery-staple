@@ -42,6 +42,9 @@ func (m *Marker) SetLatLng(lat, lng float64) {
 	if m.Message != nil {
 		m.Message.Call("setLatLng", NewLatLng(lat, lng))
 	}
+	if m.Accuracy != nil {
+		m.Accuracy.SetLatLng(lat, lng)
+	}
 }
 
 func (m *Marker) AddToMap(mapView *MapView) {
