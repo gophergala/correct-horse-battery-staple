@@ -8,19 +8,20 @@ type Circle struct {
 	js.Object
 }
 
-func NewCircle(lat, lng, radius float64) *Circle {
+func NewCircle(latlng *LatLng) *Circle {
 	return &Circle{
-		Object: L.Call("circle", NewLatLng(lat, lng), radius),
+		Object: L.Call("circle", latlng),
 	}
 }
 
-func (c *Circle) LatLng() (float64, float64) {
-	latLng := c.Call("getLatLng")
-	return latLng.Get("lat").Float(), latLng.Get("lng").Float()
+func (c *Circle) LatLng() *LatLng {
+	return &LatLng{
+		Object: c.Call("getLatLng"),
+	}
 }
 
-func (c *Circle) SetLatLng(lat, lng float64) {
-	c.Call("setLatLng", NewLatLng(lat, lng))
+func (c *Circle) SetLatLng(latlng *LatLng) {
+	c.Call("setLatLng", latlng)
 }
 
 func (c *Circle) Radius() float64 {

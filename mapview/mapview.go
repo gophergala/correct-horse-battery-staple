@@ -29,22 +29,12 @@ func (mv *MapView) SetView(lat, lng float64, zoom int) {
 	mv.Call("setView", NewLatLng(lat, lng), zoom)
 }
 
-func (mv *MapView) AddMarker(lat, lng float64) *Marker {
-	marker := NewMarker(lat, lng)
-	marker.AddToMap(mv)
-	return marker
+func (mv *MapView) AddAvatar(avatar *Avatar) {
+	mv.Call("addLayer", avatar)
 }
 
-func (mv *MapView) RemoveMarker(marker *Marker) {
-	mv.Call("removeLayer", marker)
-}
-
-func (mv *MapView) AddMarkerWithMessage(lat, lng, accuracy float64, msg string) *Marker {
-	marker := NewMarker(lat, lng)
-	marker.SetMessage(msg)
-	marker.SetAccuracy(accuracy)
-	marker.AddToMap(mv)
-	return marker
+func (mv *MapView) RemoveAvatar(avatar *Avatar) {
+	mv.Call("removeLayer", avatar)
 }
 
 func (mv *MapView) StartLocate() {
