@@ -17,6 +17,7 @@ import (
 
 var httpFlag = flag.String("http", "localhost:8080", "Listen for HTTP connections on this address.")
 var webSocketHostFlag = flag.String("websockethost", "localhost:8080", "Listen for WebSocket connections on this address.")
+var googleAnalyticsFlag = flag.String("ga", "", "Report to Google Analytics under this code")
 
 var t *template.Template
 
@@ -46,6 +47,14 @@ func mainHandler(w http.ResponseWriter, req *http.Request) {
 
 	roomId := req.URL.Path[1:]
 
+	var pageVars = struct {
+		WebSocketAddress    string
+		GoogleAnalyticsCode string
+	}{
+		WebSocketAddress:    "ws://" + *webSocketHostFlag + "/websocket/" + roomId,
+		GoogleAnalyticsCode: *googleAnalyticsFlag,
+	}
+
 	var roomExists bool
 	state.mu.Lock()
 	_, roomExists = state.rooms[roomId]
@@ -65,8 +74,7 @@ func mainHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	webSocketAddress := "ws://" + *webSocketHostFlag + "/websocket/" + roomId
-	err := t.ExecuteTemplate(w, "index.html.tmpl", webSocketAddress)
+	err := t.ExecuteTemplate(w, "index.html.tmpl", pageVars)
 	if err != nil {
 		log.Println("t.Execute:", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
