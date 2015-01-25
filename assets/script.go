@@ -26,11 +26,6 @@ func setup() error {
 }
 
 func run() error {
-	// Clear all markers (possibly left over from previous connection).
-	for _, marker := range markers {
-		marker.RemoveFromMap(mapView)
-	}
-
 	webSocketClosed := false
 	ws, err := websocket.Dial(js.Global.Get("WebSocketAddress").String())
 	if err != nil {
@@ -42,6 +37,11 @@ func run() error {
 	})
 	enc := json.NewEncoder(ws)
 	dec := json.NewDecoder(ws)
+
+	// Clear all markers (possibly left over from previous connection).
+	for _, marker := range markers {
+		marker.RemoveFromMap(mapView)
+	}
 
 	var bounds *mapview.LatLngBounds
 	var lat, lng float64
