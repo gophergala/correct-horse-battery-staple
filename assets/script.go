@@ -94,6 +94,8 @@ func run() error {
 	}()
 
 	mapView.OnLocFound(func(loc js.Object) {
+		document.GetElementByID("spinner-container").(dom.HTMLElement).Style().SetProperty("display", "none", "")
+
 		foundLocation = true
 		latlng := loc.Get("latlng")
 		lat = latlng.Get("lat").Float()
