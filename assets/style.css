@@ -7,6 +7,14 @@ body {
 	height: 100%;
 }
 
+#map .spinner-container {
+	position: absolute;
+	top: 50%;
+	left: 0;
+	right:0;
+	transform: translateY(-50%);
+	text-align: center;
+}
 
 .urlhelp {
 	font: normal 24px/100% Verdana, Tahoma, sans-serif;
