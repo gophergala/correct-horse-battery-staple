@@ -25,7 +25,7 @@ func run() error {
 	dec := json.NewDecoder(ws)
 
 	mapView := mapview.New("map")
-	markers := make(map[int64]*mapview.Marker, 10)
+	avatars := make(map[int64]*mapview.Avatar, 10)
 	var bounds *mapview.LatLngBounds
 	var lat, lng float64
 	var accuracy float64
@@ -84,7 +84,7 @@ func run() error {
 		var msg common.ServerUpdate
 		originalIds := make(map[int64]struct{})
 
-		for k := range markers {
+		for k := range avatars {
 			originalIds[k] = struct{}{}
 		}
 
@@ -94,14 +94,15 @@ func run() error {
 		}
 
 		for i, clientState := range msg.Clients {
-			if markers[clientState.Id] == nil {
-				markers[clientState.Id] = mapView.AddMarkerWithMessage(clientState.Lat, clientState.Lng, clientState.Accuracy, clientState.Name)
+			avatar := avatars[clientState.Id]
+			if avatar == nil {
+				avatar = mapview.NewAvatar(clientState.Lat, clientState.Lng)
+				avatars[clientState.Id] = avatar
+				mapView.AddAvatar(avatar)
 			} else {
-				markers[clientState.Id].SetLatLng(clientState.Lat, clientState.Lng)
-				markers[clientState.Id].SetMessage(clientState.Name)
-				markers[clientState.Id].SetAccuracy(clientState.Accuracy)
 				delete(originalIds, clientState.Id)
 			}
+			avatar.Update(clientState.Lat, clientState.Lng, clientState.Accuracy, clientState.Name)
 
 			if i == 0 {
 				bounds = mapview.NewLatLngBounds(
@@ -113,7 +114,7 @@ func run() error {
 		}
 
 		for key := range originalIds {
-			markers[key].RemoveFromMap(mapView)
+			mapView.RemoveAvatar(avatars[key])
 		}
 
 		if bounds != nil {
