@@ -43,6 +43,9 @@ func (m *Marker) SetMessage(message string) {
 	if message != "" {
 		if m.Message == nil {
 			m.Message = NewPopup(m.Lat, m.Lng)
+			if m.mapView != nil {
+				m.mapView.Call("addLayer", m.Message)
+			}
 		}
 		m.Message.SetContent("<span class=\"popup\">" + message + "</span>")
 	} else {
