@@ -28,6 +28,7 @@ func run() error {
 	markers := make(map[int64]*mapview.Marker, 10)
 	var bounds *mapview.LatLngBounds
 	var lat, lng float64
+	var accuracy float64
 	foundLocation := false
 
 	go func() {
@@ -36,9 +37,10 @@ func run() error {
 			message := document.GetElementByID("message").(*dom.HTMLInputElement).Value
 
 			clientState := common.ClientState{
-				Name: message,
-				Lat:  lat,
-				Lng:  lng,
+				Name:     message,
+				Lat:      lat,
+				Lng:      lng,
+				Accuracy: accuracy,
 			}
 
 			if foundLocation {
@@ -55,6 +57,7 @@ func run() error {
 		latlng := loc.Get("latlng")
 		lat = latlng.Get("lat").Float()
 		lng = latlng.Get("lng").Float()
+		accuracy = loc.Get("accuracy").Float()
 	})
 
 	mapView.StartLocate()
@@ -74,10 +77,11 @@ func run() error {
 
 		for i, clientState := range msg.Clients {
 			if markers[clientState.Id] == nil {
-				markers[clientState.Id] = mapView.AddMarkerWithMessage(clientState.Lat, clientState.Lng, clientState.Name)
+				markers[clientState.Id] = mapView.AddMarkerWithMessage(clientState.Lat, clientState.Lng, clientState.Accuracy, clientState.Name)
 			} else {
 				markers[clientState.Id].SetLatLng(clientState.Lat, clientState.Lng)
 				markers[clientState.Id].SetMessage(clientState.Name)
+				markers[clientState.Id].SetAccuracy(clientState.Accuracy)
 				delete(originalIds, clientState.Id)
 			}
 

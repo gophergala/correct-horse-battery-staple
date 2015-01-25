@@ -4,6 +4,7 @@ type ClientState struct {
 	Id       int64
 	Name     string
 	Lat, Lng float64
+	Accuracy float64
 }
 
 type ServerUpdate struct {

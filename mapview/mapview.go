@@ -39,9 +39,10 @@ func (mv *MapView) RemoveMarker(marker *Marker) {
 	mv.Call("removeLayer", marker)
 }
 
-func (mv *MapView) AddMarkerWithMessage(lat, lng float64, msg string) *Marker {
+func (mv *MapView) AddMarkerWithMessage(lat, lng, accuracy float64, msg string) *Marker {
 	marker := NewMarker(lat, lng)
 	marker.SetMessage(msg)
+	marker.SetAccuracy(accuracy)
 	marker.AddToMap(mv)
 	return marker
 }

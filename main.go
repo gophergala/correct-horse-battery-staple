@@ -123,6 +123,7 @@ func webSocketHandler(ws *websocket.Conn) {
 		clientState.Name = msg.Name
 		clientState.Lat = msg.Lat
 		clientState.Lng = msg.Lng
+		clientState.Accuracy = msg.Accuracy
 		room.connections[ws] = clientState
 		room.mu.Unlock()
 	}
