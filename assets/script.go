@@ -4,6 +4,7 @@ package main
 
 import (
 	"log"
+	"time"
 
 	"github.com/gophergala/correct-horse-battery-staple/common"
 	"github.com/gophergala/correct-horse-battery-staple/js/encoding/json"
@@ -26,18 +27,34 @@ func run() error {
 	mapView := mapview.New("map")
 	var markers []*mapview.Marker
 	var bounds *mapview.LatLngBounds
+	var lat, lng float64
+	foundLocation := false
+
+	go func() {
+		for {
+			time.Sleep(time.Second)
+			message := document.GetElementByID("message").(*dom.HTMLInputElement).Value
+
+			clientState := common.ClientState{
+				Name: message,
+				Lat:  lat,
+				Lng:  lng,
+			}
+
+			if foundLocation {
+				err = enc.Encode(clientState)
+				if err != nil {
+					log.Println("enc.Encode:", err)
+				}
+			}
+		}
+	}()
 
 	mapView.OnLocFound(func(loc js.Object) {
+		foundLocation = true
 		latlng := loc.Get("latlng")
-		clientState := common.ClientState{
-			Name: "Me: (" + latlng.Get("lat").String() + ", " + latlng.Get("lng").String() + ")",
-			Lat:  latlng.Get("lat").Float(),
-			Lng:  latlng.Get("lng").Float(),
-		}
-		err = enc.Encode(clientState)
-		if err != nil {
-			log.Println("enc.Encode:", err)
-		}
+		lat = latlng.Get("lat").Float()
+		lng = latlng.Get("lng").Float()
 	})
 
 	mapView.StartLocate()
@@ -50,14 +67,14 @@ func run() error {
 		}
 
 		for _, marker := range markers {
-			mapView.RemoveMarker(marker)
+			marker.RemoveFromMap(mapView)
 		}
 
 		markers = nil
 
 		for i, clientState := range msg.Clients {
 			markers = append(markers,
-				mapView.AddMarker(clientState.Lat, clientState.Lng))
+				mapView.AddMarkerWithMessage(clientState.Lat, clientState.Lng, clientState.Name))
 			if i == 0 {
 				bounds = mapview.NewLatLngBounds(
 					mapview.NewLatLng(clientState.Lat, clientState.Lng),
