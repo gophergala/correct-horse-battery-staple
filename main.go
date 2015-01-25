@@ -47,31 +47,19 @@ func mainHandler(w http.ResponseWriter, req *http.Request) {
 
 	roomId := req.URL.Path[1:]
 
+	// If room id is invalid, redirect to a valid one.
+	if validateRoomId(roomId) != nil {
+		roomId = generateRoomId()
+		http.Redirect(w, req, "/"+roomId, http.StatusFound)
+		return
+	}
+
 	var pageVars = struct {
 		WebSocketAddress    string
 		GoogleAnalyticsCode string
 	}{
 		WebSocketAddress:    "ws://" + *webSocketHostFlag + "/websocket/" + roomId,
 		GoogleAnalyticsCode: *googleAnalyticsFlag,
-	}
-
-	var roomExists bool
-	state.mu.Lock()
-	_, roomExists = state.rooms[roomId]
-	state.mu.Unlock()
-	if !roomExists {
-		// Create room and redirect to it.
-		if validateRoomId(roomId) != nil {
-			roomId = generateRoomId()
-		}
-		state.mu.Lock()
-		if _, ok := state.rooms[roomId]; !ok {
-			state.rooms[roomId] = &room{connections: make(map[*websocket.Conn]serverClientState)}
-		}
-		state.mu.Unlock()
-		go broadcastUpdates(roomId)
-		http.Redirect(w, req, "/"+roomId, http.StatusFound)
-		return
 	}
 
 	err := t.ExecuteTemplate(w, "index.html.tmpl", pageVars)
@@ -92,20 +80,28 @@ func webSocketHandler(ws *websocket.Conn) {
 	roomId := ws.Request().URL.Path[len("/websocket/"):]
 
 	state.mu.Lock()
-	room, roomExists := state.rooms[roomId]
-	state.mu.Unlock()
+	r, roomExists := state.rooms[roomId]
 	if !roomExists {
-		return
-	}
+		if validateRoomId(roomId) != nil {
+			state.mu.Unlock()
+			return
+		}
 
-	room.mu.Lock()
-	room.connections[ws] = serverClientState{
+		// Create this room.
+		r = &room{connections: make(map[*websocket.Conn]serverClientState)}
+		state.rooms[roomId] = r
+		go broadcastUpdates(roomId)
+	}
+	state.mu.Unlock()
+
+	r.mu.Lock()
+	r.connections[ws] = serverClientState{
 		ClientState: common.ClientState{
 			Id: getUniqueId(),
 		},
 		validPosition: false, // When a client first connects, its initial position is not valid.
 	}
-	room.mu.Unlock()
+	r.mu.Unlock()
 
 	dec := json.NewDecoder(ws)
 
@@ -117,20 +113,20 @@ func webSocketHandler(ws *websocket.Conn) {
 			break
 		}
 
-		room.mu.Lock()
-		clientState := room.connections[ws]
+		r.mu.Lock()
+		clientState := r.connections[ws]
 		clientState.validPosition = true
 		clientState.Name = msg.Name
 		clientState.Lat = msg.Lat
 		clientState.Lng = msg.Lng
 		clientState.Accuracy = msg.Accuracy
-		room.connections[ws] = clientState
-		room.mu.Unlock()
+		r.connections[ws] = clientState
+		r.mu.Unlock()
 	}
 
-	room.mu.Lock()
-	delete(room.connections, ws)
-	room.mu.Unlock()
+	r.mu.Lock()
+	delete(r.connections, ws)
+	r.mu.Unlock()
 }
 
 func broadcastUpdates(roomId string) {
@@ -157,8 +153,7 @@ func broadcastUpdates(roomId string) {
 
 		// If there are no connected clients, break out and remove room.
 		if len(clients) == 0 {
-			// TODO: Not yet, what if this happens before first client connects?
-			//break
+			break
 		}
 
 		// Don't send empty update messages.
