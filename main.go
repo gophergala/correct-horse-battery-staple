@@ -54,7 +54,9 @@ func mainHandler(w http.ResponseWriter, req *http.Request) {
 		// Create room and redirect to it.
 		roomId = generateRoomId()
 		state.mu.Lock()
-		state.rooms[roomId] = &room{connections: make(map[*websocket.Conn]serverClientState)}
+		if _, ok := state.rooms[roomId]; !ok {
+			state.rooms[roomId] = &room{connections: make(map[*websocket.Conn]serverClientState)}
+		}
 		state.mu.Unlock()
 		go broadcastUpdates(roomId)
 		http.Redirect(w, req, "/"+roomId, http.StatusFound)
