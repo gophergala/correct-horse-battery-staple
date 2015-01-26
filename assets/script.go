@@ -143,7 +143,7 @@ func run() error {
 		}
 
 		if bounds != nil {
-			bounds.Pad(0.05)
+			bounds.Pad(0.10)
 			mapView.FitBounds(bounds)
 		}
 
