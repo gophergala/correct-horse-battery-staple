@@ -39,12 +39,6 @@ type room struct {
 }
 
 func mainHandler(w http.ResponseWriter, req *http.Request) {
-	/*if err := loadTemplates(); err != nil {
-		log.Println("loadTemplates:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}*/
-
 	roomId := req.URL.Path[1:]
 
 	// If room id is invalid, redirect to a valid one.
