@@ -39,12 +39,6 @@ type room struct {
 }
 
 func mainHandler(w http.ResponseWriter, req *http.Request) {
-	if err := loadTemplates(); err != nil {
-		log.Println("loadTemplates:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	roomId := req.URL.Path[1:]
 
 	// If room id is invalid, redirect to a valid one.
@@ -189,7 +183,7 @@ func main() {
 	http.Handle("/", http.HandlerFunc(mainHandler))
 	http.Handle("/websocket/", websocket.Handler(webSocketHandler))
 	http.Handle("/assets/", http.FileServer(http.Dir("./")))
-	http.Handle("/assets/script.go.js", gopherjs_http.GoFiles("./assets/script.go"))
+	http.Handle("/assets/script.go.js", gopherjs_http.StaticGoFiles("./assets/script.go"))
 
 	err = http.ListenAndServe(*httpFlag, nil)
 	if err != nil {
