@@ -12,7 +12,7 @@ body {
 	top: 50%;
 	left: 0;
 	right:0;
-	-webit-transform: translateY(-50%);
+	-webkit-transform: translateY(-50%);
 	transform: translateY(-50%);
 	text-align: center;
 }
