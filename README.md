@@ -3,7 +3,7 @@ Working Demo
 
 http://where-you-at.com
 
-![iOS ScreenShot](https://s3.amazonaws.com/f.cl.ly/items/2i191V0S242c2o352Q1j/Image%202015-01-25%20at%203.26.06%20PM.png)
+![iOS ScreenShot](https://s3.amazonaws.com/f.cl.ly/items/0i3l1w1I3V023Z3o341Y/Image%202015-01-25%20at%204.39.23%20PM.png)
 
 Installing
 ----------
