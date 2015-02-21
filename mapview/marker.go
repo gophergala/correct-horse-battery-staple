@@ -17,7 +17,7 @@ func accuracyColor(a float64) string {
 }
 
 type Marker struct {
-	js.Object
+	*js.Object
 	Message  *Popup
 	Lat      float64
 	Lng      float64

@@ -5,7 +5,7 @@ import (
 )
 
 type Circle struct {
-	js.Object
+	*js.Object
 }
 
 func NewCircle(lat, lng, radius float64) *Circle {

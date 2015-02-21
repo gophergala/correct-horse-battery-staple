@@ -5,7 +5,7 @@ import (
 )
 
 type LatLng struct {
-	js.Object
+	*js.Object
 }
 
 func NewLatLng(lat, lng float64) *LatLng {

@@ -5,7 +5,7 @@ import (
 )
 
 type Point struct {
-	js.Object
+	*js.Object
 }
 
 func NewPoint(x, y int64) *Point {

@@ -5,7 +5,7 @@ import (
 )
 
 type Popup struct {
-	js.Object
+	*js.Object
 }
 
 func NewPopup(lat, lng float64) *Popup {

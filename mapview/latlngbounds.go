@@ -5,7 +5,7 @@ import (
 )
 
 type LatLngBounds struct {
-	js.Object
+	*js.Object
 }
 
 func NewLatLngBounds(southWest, northEast *LatLng) *LatLngBounds {

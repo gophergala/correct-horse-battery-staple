@@ -32,7 +32,7 @@ func run() error {
 		return err
 	}
 	defer ws.Close()
-	ws.AddEventListener("close", false, func(_ js.Object) {
+	ws.AddEventListener("close", false, func(_ *js.Object) {
 		webSocketClosed = true
 	})
 	enc := json.NewEncoder(ws)
@@ -93,7 +93,7 @@ func run() error {
 		}
 	}()
 
-	mapView.OnLocFound(func(loc js.Object) {
+	mapView.OnLocFound(func(loc *js.Object) {
 		document.GetElementByID("spinner-container").(dom.HTMLElement).Style().SetProperty("display", "none", "")
 
 		foundLocation = true

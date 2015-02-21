@@ -11,7 +11,7 @@ const (
 var L = js.Global.Get("L")
 
 type MapView struct {
-	js.Object
+	*js.Object
 }
 
 func New(id string) *MapView {
@@ -58,7 +58,7 @@ func (mv *MapView) StopLocate() {
 	mv.Call("stopLocate")
 }
 
-func (mv *MapView) OnLocFound(cb func(js.Object)) {
+func (mv *MapView) OnLocFound(cb func(*js.Object)) {
 	mv.Call("on", "locationfound", cb)
 }
 
